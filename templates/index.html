@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thread Guard</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            color: #ff0000;
+            padding: 20px;
+            min-height: 100vh;
+            background-image: url('https://wallpapers.com/images/hd/computer-coding-hd-rigvxnafbrqgfein.webp');
+            background-size: cover;
+            background-position: center;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image: repeating-linear-gradient(
+                to bottom,
+                rgba(255, 0, 0, 0.05) 0px,
+                rgba(255, 0, 0, 0.05) 1px,
+                transparent 1px,
+                transparent 3px
+            );
+            animation: scan 5s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scan {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100%; }
+        }
+
+        .navbar {
+            text-align: center;
+            padding: 15px 30px;
+            background-color: rgba(0, 0, 0, 0.85);
+            border-bottom: 1px solid red;
+            box-shadow: 0 0 10px red;
+            margin-bottom: 25px;
+        }
+
+        .navbar h1 {
+            font-size: 2.5em;
+            text-shadow: 0 0 8px red;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            margin: auto;
+            background-color: rgba(0, 0, 0, 0.85);
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid red;
+            box-shadow: 0 0 15px red;
+        }
+
+        h2 { margin-bottom: 10px; text-shadow: 0 0 5px red; }
+
+        .form-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-block: 15px;
+        }
+
+        input[type="file"],
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid red;
+            background: #111;
+            color: red;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: 1px solid red;
+            background: black;
+            color: red;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: .3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        button:hover {
+            background: red;
+            color: black;
+            box-shadow: 0 0 10px red;
+        }
+
+        /* Rabbit animation */
+        .rabbit-animation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3.5em;
+            display: none;
+            animation: hop 0.6s infinite;
+            text-shadow: 0 0 15px red;
+        }
+
+        @keyframes hop {
+            0% { transform: translate(-50%, -50%) translateY(0); }
+            50% { transform: translate(-50%, -50%) translateY(-20px); }
+            100% { transform: translate(-50%, -50%) translateY(0); }
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid red;
+            border-radius: 8px;
+            text-shadow: 0 0 5px red;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="rabbitAnimation" class="rabbit-animation">🐰</div>
+
+<div class="navbar">
+    <h1>Thread Guard</h1>
+</div>
+
+<div class="container">
+
+    {% if client_ip %}
+    <p><b>Your IP:</b> {{ client_ip }}</p>
+    {% endif %}
+
+    <!-- FILE SCANNER -->
+    <h2><i class="fas fa-file"></i> Scam File Checker</h2>
+
+    <form action="/scam/" method="post" enctype="multipart/form-data" id="fileForm">
+        <div class="form-row">
+            <input type="file" name="file" required>
+            <button type="submit"><i class="fas fa-upload"></i> Analyze</button>
+        </div>
+    </form>
+
+    {% if message %}
+    <div class="result-box">{{ message }}</div>
+    {% endif %}
+
+    <hr style="margin:20px 0; border-color:red;">
+
+    <!-- URL SCANNER -->
+    <h2><i class="fas fa-link"></i> URL Scam Classification</h2>
+
+    <form action="/predict" method="post" id="urlForm">
+        <div class="form-row">
+            <input type="text" name="url" placeholder="Enter URL..." required>
+            <button type="submit"><i class="fas fa-search"></i> Classify</button>
+        </div>
+    </form>
+
+    {% if predicted_class %}
+    <div class="result-box">
+        <p><b>URL:</b> {{ input_url }}</p>
+        <p><b>Classification:</b> {{ predicted_class }}</p>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+    // Show rabbit animation
+    function showRabbit() {
+        document.getElementById("rabbitAnimation").style.display = "block";
+    }
+
+    // Hide rabbit animation
+    function hideRabbit() {
+        document.getElementById("rabbitAnimation").style.display = "none";
+    }
+
+    // Observe DOM changes → hide animation when results appear
+    const observer = new MutationObserver(() => {
+        const results = document.querySelector(".result-box");
+        if (results) hideRabbit();
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // Attach to forms
+    document.getElementById("fileForm").addEventListener("submit", showRabbit);
+    document.getElementById("urlForm").addEventListener("submit", showRabbit);
+</script>
+
+</body>
+</html>
